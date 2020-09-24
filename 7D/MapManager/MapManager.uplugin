@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "MapManager",
+	"Description": "Help artists design and manage levels",
+	"Category": "Other",
+	"CreatedBy": "Lyx",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "MapManager",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}

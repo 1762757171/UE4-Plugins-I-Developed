@@ -10,7 +10,6 @@ struct FGraphFactories
 	TSharedPtr<struct FGraphPanelNodeFactory> GraphNodeFactory;
 	TSharedPtr<struct FGraphPanelPinFactory> GraphPinFactory;
 	TSharedPtr<struct FGraphPanelPinConnectionFactory> GraphConnectionFactory;
-
 };
 
 

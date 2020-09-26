@@ -33,13 +33,13 @@ void SLightViewer::Construct(const FArguments& InArgs, const TSharedRef<SDockTab
     RefreshVisibleRows();
     ContentListView->RequestListRefresh();
     
-    BeginGameDelegateHandle = FEditorDelegates::PostPIEStarted.AddRaw(this, &SLightViewer::Event_OnBeginGame);
+    BeginGameDelegateHandle = FEditorDelegates::PostPIEStarted.AddSP(this, &SLightViewer::Event_OnBeginGame);
     if(GEditor->PlayWorld)
     {
         Event_OnBeginGame(false);
     }
     
-    EndGameDelegateHandle = FEditorDelegates::PrePIEEnded.AddRaw(this, &SLightViewer::Event_OnEndGame);
+    EndGameDelegateHandle = FEditorDelegates::PrePIEEnded.AddSP(this, &SLightViewer::Event_OnEndGame);
 }
 
 SLightViewer::~SLightViewer()
@@ -53,6 +53,7 @@ SLightViewer::~SLightViewer()
         FEditorDelegates::PostPIEStarted.Remove(EndGameDelegateHandle);
         EndGameDelegateHandle.Reset();
     }
+    LightViewer.Reset();
 }
 
 void SLightViewer::OnFilterTextChanged(const FText& NewText)

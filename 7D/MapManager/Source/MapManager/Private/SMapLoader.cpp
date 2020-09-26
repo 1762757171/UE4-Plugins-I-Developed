@@ -63,7 +63,7 @@ void SMapLoader::Construct(const FArguments& InArgs, const TSharedRef<class SDoc
         ]
     ;
 
-	MapLoader->OnLoaderFlushed.AddSP(SharedThis(this), &SMapLoader::RefreshWhenFlush);
+	MapLoader->OnLoaderFlushed.AddSP(this, &SMapLoader::RefreshWhenFlush);
 }
 
 TSharedRef<SWidget> SMapLoader::Construct_Table_ContentPanel()

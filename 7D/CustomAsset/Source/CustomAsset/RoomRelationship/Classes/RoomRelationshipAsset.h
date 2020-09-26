@@ -4,7 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Object.h"
+
+#ifdef WITH_EDITOR
 #include "EdGraph/EdGraph.h"
+#endif
+
 #include "RoomRelationshipAsset.generated.h"
 
 
@@ -15,7 +19,7 @@ class CUSTOMASSET_API URoomRelationshipAsset : public UObject
 
 public:
 
-#ifdef WITH_EDITOR
+#if WITH_EDITOR
     void SetGraph(UEdGraph* NewGraph);
     UEdGraph* GetGraph() const;
 #endif

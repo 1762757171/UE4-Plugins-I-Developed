@@ -2,6 +2,7 @@
 #include "SMapLoaderTreeViewRow.h"
 
 #include "EditorStyleSet.h"
+#include "FileHelpers.h"
 #include "IContentBrowserSingleton.h"
 #include "MultiBoxBuilder.h"
 #include "SCheckBox.h"
@@ -65,6 +66,18 @@ TSharedRef<SWidget> SMapLoaderTreeViewRow::GenerateWidgetForColumn(const FName& 
     }
 
     return SNullWidget::NullWidget;
+}
+
+FReply SMapLoaderTreeViewRow::OnMouseButtonDoubleClick(const FGeometry& InMyGeometry, const FPointerEvent& InMouseEvent)
+{
+    STableRow::OnMouseButtonDoubleClick(InMyGeometry, InMouseEvent);
+
+    if(!Data->IsFolder)
+    {
+        FEditorFileUtils::LoadMap(Data->LevelStreaming_or_HierarchyName, false, true);
+    }
+
+    return FReply::Handled();
 }
 
 FReply SMapLoaderTreeViewRow::OnMouseButtonUp(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)

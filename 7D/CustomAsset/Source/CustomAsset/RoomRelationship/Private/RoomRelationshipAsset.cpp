@@ -4,6 +4,7 @@
 #include "RoomRelationship/Classes/RoomRelationshipNode.h"
 
 
+#if WITH_EDITOR
 void URoomRelationshipAsset::SetGraph(UEdGraph* NewGraph)
 {
     Graph = NewGraph;
@@ -13,6 +14,7 @@ UEdGraph* URoomRelationshipAsset::GetGraph() const
 {
     return Graph;
 }
+#endif
 
 bool URoomRelationshipAsset::ContainRoom(const FName& RoomName) const
 {

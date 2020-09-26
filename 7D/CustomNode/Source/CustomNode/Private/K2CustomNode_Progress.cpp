@@ -345,10 +345,10 @@ void UK2CustomNode_Progress::ExpandNode(FKismetCompilerContext& CompilerContext,
 	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(FlagCurrentNode, this);
 
 	//Equal node
-	UK2Node_CallFunction* EqualNode = SourceGraph->CreateIntermediateNode<UK2Node_CallFunction>();
-	EqualNode->SetFromFunction( FindField<UFunction>(UKismetMathLibrary::StaticClass(), "EqualEqual_IntInt") );
-	EqualNode->AllocateDefaultPins();
-	for(auto func_pin : EqualNode->Pins)
+	UK2Node_CallFunction* EqualNode_ProgressFinish = SourceGraph->CreateIntermediateNode<UK2Node_CallFunction>();
+	EqualNode_ProgressFinish->SetFromFunction( FindField<UFunction>(UKismetMathLibrary::StaticClass(), "EqualEqual_IntInt") );
+	EqualNode_ProgressFinish->AllocateDefaultPins();
+	for(auto func_pin : EqualNode_ProgressFinish->Pins)
 	{
 		if(func_pin->PinName == "A")
 		{
@@ -361,10 +361,10 @@ void UK2CustomNode_Progress::ExpandNode(FKismetCompilerContext& CompilerContext,
 	}
 	
 	// BranchNode
-	UK2Node_IfThenElse* BranchNode = SourceGraph->CreateIntermediateNode<UK2Node_IfThenElse>();
-	BranchNode->AllocateDefaultPins();
-	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(BranchNode, this);
-	BranchNode->GetConditionPin()->MakeLinkTo(EqualNode->GetReturnValuePin());
+	UK2Node_IfThenElse* BranchNode_ProgressFinish = SourceGraph->CreateIntermediateNode<UK2Node_IfThenElse>();
+	BranchNode_ProgressFinish->AllocateDefaultPins();
+	CompilerContext.MessageLog.NotifyIntermediateObjectCreation(BranchNode_ProgressFinish, this);
+	BranchNode_ProgressFinish->GetConditionPin()->MakeLinkTo(EqualNode_ProgressFinish->GetReturnValuePin());
 
 
 	UEdGraphPin* OutputPin = nullptr;
@@ -378,6 +378,44 @@ void UK2CustomNode_Progress::ExpandNode(FKismetCompilerContext& CompilerContext,
 			OutputPin = p;
 			continue;
 		}
+		
+		UK2Node_CallFunction* BitAndNode = SourceGraph->CreateIntermediateNode<UK2Node_CallFunction>();
+		BitAndNode->SetFromFunction( FindField<UFunction>(UKismetMathLibrary::StaticClass(), "And_IntInt") );
+		BitAndNode->AllocateDefaultPins();
+		for(auto func_pin : BitAndNode->Pins)
+		{
+			if(func_pin->PinName == "A")
+			{
+				func_pin->MakeLinkTo(FlagCurrentNode->GetVariablePin());
+			}
+			else if(func_pin->PinName == "B")
+			{
+				func_pin->DefaultValue = FString::FromInt( 1 << ActualIndex );
+			}
+		}
+		
+		//Equal node
+		UK2Node_CallFunction* EqualNode_FlagSet = SourceGraph->CreateIntermediateNode<UK2Node_CallFunction>();
+		EqualNode_FlagSet->SetFromFunction( FindField<UFunction>(UKismetMathLibrary::StaticClass(), "EqualEqual_IntInt") );
+		EqualNode_FlagSet->AllocateDefaultPins();
+		for(auto func_pin : EqualNode_FlagSet->Pins)
+		{
+			if(func_pin->PinName == "A")
+			{
+				func_pin->MakeLinkTo(BitAndNode->GetReturnValuePin());
+			}
+			else if(func_pin->PinName == "B")
+			{
+				func_pin->DefaultValue = FString( TEXT("0") );
+			}
+		}
+		
+		// BranchNode
+		UK2Node_IfThenElse* BranchNode_FlagSet = SourceGraph->CreateIntermediateNode<UK2Node_IfThenElse>();
+		BranchNode_FlagSet->AllocateDefaultPins();
+		CompilerContext.MessageLog.NotifyIntermediateObjectCreation(BranchNode_FlagSet, this);
+		BranchNode_FlagSet->GetConditionPin()->MakeLinkTo(EqualNode_FlagSet->GetReturnValuePin());
+
 
 		UK2Node_CallFunction* BitOrNode = SourceGraph->CreateIntermediateNode<UK2Node_CallFunction>();
 		BitOrNode->SetFromFunction( FindField<UFunction>(UKismetMathLibrary::StaticClass(), "Or_IntInt") );
@@ -403,14 +441,15 @@ void UK2CustomNode_Progress::ExpandNode(FKismetCompilerContext& CompilerContext,
 		AssignmentCurrentNode->GetVariablePin()->MakeLinkTo(FlagTotalVarPin);
 		AssignmentCurrentNode->GetValuePin()->PinType = BitOrNode->GetReturnValuePin()->PinType;
 		AssignmentCurrentNode->GetValuePin()->MakeLinkTo(BitOrNode->GetReturnValuePin());
-		AssignmentCurrentNode->GetThenPin()->MakeLinkTo(BranchNode->GetExecPin());
+		AssignmentCurrentNode->GetExecPin()->MakeLinkTo(BranchNode_FlagSet->GetThenPin());
+		AssignmentCurrentNode->GetThenPin()->MakeLinkTo(BranchNode_ProgressFinish->GetExecPin());
 
-		CompilerContext.MovePinLinksToIntermediate(*p, *AssignmentCurrentNode->GetExecPin());
+		CompilerContext.MovePinLinksToIntermediate(*p, *BranchNode_FlagSet->GetExecPin());
 		
 		++ActualIndex;
 	}
 	
-	CompilerContext.MovePinLinksToIntermediate(*OutputPin, *BranchNode->GetThenPin());
+	CompilerContext.MovePinLinksToIntermediate(*OutputPin, *BranchNode_ProgressFinish->GetThenPin());
 	
 	// Break all links to the Select node so it goes away for at scheduling time
 	BreakAllNodeLinks();
